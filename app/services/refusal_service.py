@@ -13,18 +13,29 @@ REFUSAL_TOPICS = {
         "wrongful termination", "discrimination lawsuit",
     ],
     "salary": [
-        "salary", "compensation", "pay range", "how much",
-        "wage", "bonus", "stock options", "equity", "benefits package",
+        "salary", "compensation", "pay range", "how much should i pay",
+        "wage", "bonus structure", "stock options", "equity package",
         "salary negotiation", "pay scale",
     ],
     "off_topic": [
-        "recipe", "weather", "sports", "movie", "game",
+        "recipe", "weather forecast", "sports score", "movie recommendation",
         "homework", "write me a poem", "tell me a joke",
-        "write code", "debug", "fix my code", "translate",
+        "write code for", "debug my code", "fix my code", "translate this",
         "book recommendation", "travel advice", "medical advice",
         "health advice", "investment advice", "stock market",
         "cryptocurrency", "bitcoin", "dating advice",
-        "python script", "write a script", "write me a script"
+        "write a script for", "write me a script",
+    ],
+    "hiring_advice": [
+        "interview questions to ask", "hiring strategy", "onboarding process",
+        "how to interview candidates", "resume tips", "cv review",
+        "performance review template", "how to fire",
+    ],
+    "competitor": [
+        "non-shl", "other than shl", "instead of shl",
+        "hackerrank", "leetcode", "codility", "pymetrics",
+        "criteria corp", "hirevue", "wonderlic", "testgorilla",
+        "recommend non-shl", "alternative to shl",
     ],
 }
 
@@ -49,10 +60,36 @@ INJECTION_PATTERNS = [
 ]
 
 REFUSAL_MESSAGES = {
-    "legal": "I'm sorry, but I can't provide legal advice. I'm specifically designed to help you find the right SHL assessments for your hiring needs. How can I help you with assessment selection?",
-    "salary": "I'm not able to provide salary or compensation guidance. My expertise is in helping you select the right SHL assessments. Would you like help finding assessments for a specific role?",
-    "off_topic": "That's outside my area of expertise. I'm an SHL assessment recommendation assistant — I can help you find the right assessments for evaluating candidates. What role are you hiring for?",
-    "injection": "I can only help with SHL assessment recommendations. Could you tell me about the role you're looking to fill so I can suggest appropriate assessments?",
+    "legal": (
+        "I'm sorry, but I can't provide legal advice. I'm specifically designed "
+        "to help you find the right SHL assessments for your hiring needs. "
+        "How can I help you with assessment selection?"
+    ),
+    "salary": (
+        "I'm not able to provide salary or compensation guidance. "
+        "My expertise is in helping you select the right SHL assessments. "
+        "Would you like help finding assessments for a specific role?"
+    ),
+    "off_topic": (
+        "That's outside my area of expertise. I'm an SHL assessment "
+        "recommendation assistant — I can help you find the right "
+        "assessments for evaluating candidates. What role are you hiring for?"
+    ),
+    "injection": (
+        "I can only help with SHL assessment recommendations. Could you "
+        "tell me about the role you're looking to fill so I can suggest "
+        "appropriate assessments?"
+    ),
+    "hiring_advice": (
+        "I specialize in recommending SHL assessments rather than providing "
+        "general hiring or interview advice. Let me know if you need help "
+        "finding the right test for a role!"
+    ),
+    "competitor": (
+        "I'm specifically trained to provide recommendations from the SHL "
+        "assessment catalog. I cannot recommend or discuss non-SHL solutions. "
+        "What type of role are you hiring for?"
+    ),
 }
 
 
@@ -73,19 +110,28 @@ def detect_refusal(text: str) -> tuple[bool, str | None, str | None]:
             logger.warning("Prompt injection attempt detected: %s", text[:50])
             return True, "injection", REFUSAL_MESSAGES["injection"]
 
+    # Check if the message has SHL/assessment context
+    shl_context = any(
+        term in text_lower
+        for term in [
+            "assessment", "test", "evaluate", "hiring", "recruit",
+            "shl", "candidate", "developer", "engineer", "manager",
+            "analyst", "role", "position", "job", "skills",
+            "competency", "measure", "screen", "select",
+        ]
+    )
+
     # Check refusal topics
     for topic, keywords in REFUSAL_TOPICS.items():
-        # Require keyword match but also check it's not SHL-related
         for keyword in keywords:
             if keyword in text_lower:
-                # Don't refuse if the message also mentions assessments/hiring
-                shl_context = any(
-                    term in text_lower
-                    for term in ["assessment", "test", "evaluate", "hiring",
-                                 "recruit", "shl", "candidate"]
-                )
-                if not shl_context:
-                    logger.info("Refusing %s topic: %s", topic, text[:50])
-                    return True, topic, REFUSAL_MESSAGES[topic]
+                # Allow if the message has clear SHL/hiring context, but only for certain topics
+                # (user is asking about assessments for a role that happens to mention these)
+                if shl_context and topic in ["competitor", "hiring_advice"]:
+                    # Don't refuse — user is likely asking about
+                    # assessments in a context that happens to mention this keyword
+                    continue
+                logger.info("Refusing %s topic: %s", topic, text[:50])
+                return True, topic, REFUSAL_MESSAGES[topic]
 
     return False, None, None

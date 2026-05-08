@@ -7,22 +7,54 @@ logger = get_logger(__name__)
 
 # Seniority keywords
 SENIORITY_KEYWORDS = {
-    "junior": ["junior", "entry-level", "entry level", "graduate", "intern", "apprentice", "fresher", "trainee"],
-    "mid-level": ["mid-level", "mid level", "intermediate", "experienced", "3-5 years", "2-4 years"],
-    "senior": ["senior", "lead", "principal", "staff", "8+ years", "10+ years", "expert"],
+    "junior": ["junior", "entry-level", "entry level", "graduate", "intern", "apprentice", "fresher", "trainee",
+               "0-1 years", "1 year", "0 years", "new grad"],
+    "mid-level": ["mid-level", "mid level", "intermediate", "experienced",
+                  "2-4 years", "3-5 years", "2 years", "3 years", "4 years", "5 years",
+                  "4 year", "5 year", "few years"],
+    "senior": ["senior", "lead", "principal", "staff",
+               "6-8 years", "8+ years", "10+ years", "6 years", "7 years", "8 years",
+               "9 years", "10 years", "expert"],
     "manager": ["manager", "director", "head of", "vp", "vice president", "executive", "c-level", "supervisor"],
 }
 
-# Assessment type indicators
+# Regex patterns for year-based seniority detection
+YEAR_PATTERN = re.compile(r'\b(\d+)\s*(?:\+\s*)?(?:years?|yrs?)\b', re.IGNORECASE)
+
+
+def _detect_seniority_from_years(text: str) -> str | None:
+    """Detect seniority level from year mentions in text.
+
+    Examples: "around 4 years", "4+ yrs", "about 3 years experience"
+    """
+    match = YEAR_PATTERN.search(text)
+    if match:
+        years = int(match.group(1))
+        if years <= 1:
+            return "junior"
+        elif years <= 5:
+            return "mid-level"
+        elif years <= 9:
+            return "senior"
+        else:
+            return "manager"
+    return None
+
+
+# Assessment type indicators — only use EXPLICIT assessment type requests,
+# NOT role-related words like "developer" or "Java"
 TYPE_INDICATORS = {
-    "cognitive": ["cognitive", "reasoning", "aptitude", "ability", "numerical", "verbal", "logical",
-                  "deductive", "inductive", "mental ability", "IQ", "problem solving", "analytical"],
-    "personality": ["personality", "behavioral", "behaviour", "OPQ", "motivation", "cultural fit",
-                    "work style", "interpersonal", "emotional intelligence", "temperament"],
-    "skills": ["coding", "programming", "technical", "software", "developer", "IT", ".NET",
-               "Java", "Python", "JavaScript", "SQL", "business skills", "typing", "Excel"],
-    "behavioral": ["situational judgment", "SJT", "judgment test", "scenarios", "simulation",
-                    "call center", "customer service"],
+    "cognitive": ["cognitive", "reasoning", "aptitude", "ability test", "numerical reasoning",
+                  "verbal reasoning", "logical reasoning", "deductive", "inductive",
+                  "mental ability", "iq test", "problem solving test", "analytical test"],
+    "personality": ["personality", "personality test", "OPQ", "motivation questionnaire",
+                    "cultural fit test", "work style assessment", "temperament",
+                    "behavioral assessment", "personality assessment"],
+    "skills": ["coding test", "coding assessment", "coding simulation", "programming test",
+               "technical test", "technical assessment", "skills test", "skills assessment",
+               "business skills test", "typing test", "excel test"],
+    "behavioral": ["situational judgment", "SJT", "judgment test", "scenarios test",
+                    "simulation assessment", "behavioral simulation"],
 }
 
 
@@ -62,12 +94,17 @@ def extract_conversation_state(messages: list) -> dict:
         r"(?:hiring|recruit|assess|evaluating|looking for|need.+?for)\s+(?:a\s+)?(.+?)(?:\s+(?:role|position|candidate|developer|engineer|manager|analyst|specialist))",
         r"(?:for\s+(?:a|an)\s+)(.+?)(?:\s+(?:role|position|job))",
         r"(?:role|position|job)\s*(?:is|:)\s*(.+?)(?:\.|,|$)",
+        r"(?:hiring|recruiting)\s+(?:a\s+|an\s+)?(.+?)(?:\s+who|\s+with|\s+that|\.|,|$)",
     ]
     for pattern in role_patterns:
         match = re.search(pattern, user_text)
         if match:
-            state["role"] = match.group(1).strip().title()
-            break
+            role_text = match.group(1).strip()
+            # Clean up the role text
+            role_text = re.sub(r'\b(i need|we need|looking for|hiring)\b', '', role_text).strip()
+            if len(role_text) > 2:
+                state["role"] = role_text.title()
+                break
 
     # Fallback: look for common role keywords
     if not state["role"]:
@@ -76,16 +113,16 @@ def extract_conversation_state(messages: list) -> dict:
             "architect", "scientist", "administrator", "consultant",
             "coordinator", "specialist", "assistant", "supervisor",
             "director", "executive", "agent", "representative", "cashier",
-            "accountant", "auditor", "bookkeeper", "teller",
+            "accountant", "auditor", "bookkeeper", "teller", "clerk",
+            "technician", "nurse", "teacher", "salesperson", "operator",
         ]
         for keyword in role_keywords:
             if keyword in user_text:
-                # Get surrounding context
+                # Get surrounding context for a better role name
                 idx = user_text.index(keyword)
                 start = max(0, idx - 30)
                 end = min(len(user_text), idx + len(keyword) + 20)
                 context = user_text[start:end].strip()
-                # Extract the role phrase
                 words = context.split()
                 for i, w in enumerate(words):
                     if keyword in w:
@@ -95,16 +132,53 @@ def extract_conversation_state(messages: list) -> dict:
                 if state["role"]:
                     break
 
-    # Extract seniority
+    # Check for job description text
+    jd_patterns = [
+        r"(?:job description|jd)\s*[:;]\s*(.+?)(?:$)",
+        r"(?:here is|here's)\s+(?:a|the)\s+(?:text|job description|jd)\s*[:;]?\s*(.+?)(?:$)",
+    ]
+    for pattern in jd_patterns:
+        match = re.search(pattern, user_text, re.DOTALL)
+        if match:
+            jd_text = match.group(1).strip()
+            # Extract role from JD if not already found
+            if not state["role"]:
+                for keyword in ["developer", "engineer", "manager", "analyst", "designer",
+                                "architect", "specialist", "coordinator", "administrator"]:
+                    if keyword in jd_text:
+                        idx = jd_text.index(keyword)
+                        start = max(0, idx - 20)
+                        context_words = jd_text[start:idx + len(keyword) + 10].split()
+                        for i, w in enumerate(context_words):
+                            if keyword in w:
+                                state["role"] = " ".join(context_words[max(0, i-2):i+1]).strip().title()
+                                break
+                        if state["role"]:
+                            break
+
+    # Extract seniority — keyword matching first, then year-based fallback
     for level, keywords in SENIORITY_KEYWORDS.items():
         if any(kw in user_text for kw in keywords):
             state["seniority"] = level
             break
 
-    # Extract assessment type needs
+    # Fallback: year-based seniority detection (fixes dead code)
+    if not state["seniority"]:
+        year_seniority = _detect_seniority_from_years(user_text)
+        if year_seniority:
+            state["seniority"] = year_seniority
+
+    # Extract assessment type needs (only from EXPLICIT requests, not role words)
     for atype, indicators in TYPE_INDICATORS.items():
-        if any(ind in user_text for ind in indicators):
-            state[f"needs_{atype if atype != 'cognitive' else 'cognitive'}"] = True
+        if any(ind.lower() in user_text for ind in indicators):
+            if atype == "cognitive":
+                state["needs_cognitive"] = True
+            elif atype == "personality":
+                state["needs_personality"] = True
+            elif atype == "skills":
+                state["needs_technical"] = True
+            elif atype == "behavioral":
+                state["needs_behavioral"] = True
             if atype not in state["assessment_types_mentioned"]:
                 state["assessment_types_mentioned"].append(atype)
 
@@ -116,6 +190,8 @@ def extract_conversation_state(messages: list) -> dict:
         "stakeholder management", "project management", "agile", "scrum",
         "data analysis", "machine learning", "customer service",
         "sales", "negotiation", "presentation", "excel", "word",
+        "html", "css", "php", "ruby", "swift", "kotlin", "spring",
+        "django", "flask", "typescript", "golang", "rust",
     ]
     for skill in skill_keywords:
         if skill in user_text:
@@ -136,25 +212,30 @@ def extract_conversation_state(messages: list) -> dict:
         if name in user_text:
             state["specific_assessments_mentioned"].append(name)
 
-    logger.info("Extracted state: role=%s, seniority=%s, skills=%d",
-                state["role"], state["seniority"], len(state["skills"]))
+    logger.info("Extracted state: role=%s, seniority=%s, skills=%d, types=%s",
+                state["role"], state["seniority"], len(state["skills"]),
+                state["assessment_types_mentioned"])
 
     return state
 
 
-def is_state_sufficient_for_recommendation(state: dict) -> bool:
+def is_state_sufficient_for_recommendation(state: dict, messages: list = None) -> bool:
     """Check if we have enough context to make recommendations.
 
-    We need at least a role OR specific skills OR assessment type preference.
+    We need at least a role or skills to make a meaningful recommendation.
+    We're intentionally more permissive than before to avoid asking
+    too many clarifying questions.
 
     Args:
         state: Extracted conversation state.
+        messages: Conversation history to check length.
 
     Returns:
         True if we have enough info to recommend.
     """
     has_role = bool(state.get("role"))
-    has_skills = len(state.get("skills", [])) >= 1
+    has_seniority = bool(state.get("seniority"))
+    has_skills = len(state.get("skills", [])) > 0
     has_type_preference = any([
         state.get("needs_cognitive"),
         state.get("needs_personality"),
@@ -163,8 +244,23 @@ def is_state_sufficient_for_recommendation(state: dict) -> bool:
     ])
     has_specific = len(state.get("specific_assessments_mentioned", [])) > 0
 
-    # Need at least one strong signal
-    return has_role or has_skills or has_type_preference or has_specific
+    # Specific assessment mentioned — recommend immediately
+    if has_specific:
+        return True
+
+    # If conversation is long (4+ messages), be more permissive
+    if messages and len(messages) >= 4:
+        return has_role or has_skills or has_type_preference
+
+    # Standard: need role + some context
+    if has_role and (has_seniority or has_type_preference or has_skills):
+        return True
+
+    # Role + any skills mentioned
+    if has_role and has_skills:
+        return True
+
+    return False
 
 
 def build_search_query(state: dict) -> str:
@@ -185,7 +281,7 @@ def build_search_query(state: dict) -> str:
         parts.append(state["seniority"])
 
     if state.get("skills"):
-        parts.extend(state["skills"][:5])  # Limit to top 5 skills
+        parts.extend(state["skills"][:5])
 
     # Add type preferences
     type_map = {

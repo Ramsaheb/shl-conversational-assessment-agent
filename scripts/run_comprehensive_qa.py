@@ -27,11 +27,11 @@ def record_result(name: str, passed: bool, error: str = "", latency: float = 0.0
     
     if passed:
         results["passed"] += 1
-        print(f"✅ PASS: {name} ({latency:.2f}s)")
+        print(f"PASS: {name} ({latency:.2f}s)")
     else:
         results["failed"] += 1
         results["failures"].append({"test": name, "error": error})
-        print(f"❌ FAIL: {name} - {error} ({latency:.2f}s)")
+        print(f"FAIL: {name} - {error} ({latency:.2f}s)")
 
 def call_chat(messages: List[Dict[str, str]]) -> tuple[Dict[str, Any], int, float]:
     start_time = time.time()

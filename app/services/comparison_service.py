@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from app.services.groq_service import generate_response
-from app.utils.validators import get_catalog_item_by_name
+from app.utils.validators import get_catalog_item_by_name, get_all_catalog_items
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -28,45 +28,39 @@ def find_assessments_to_compare(text: str) -> list[dict]:
         List of catalog items found.
     """
     text_lower = text.lower()
-
-    # Known assessment short names to search for
-    known_names = {
-        "opq": "Occupational Personality Questionnaire (OPQ32)",
-        "opq32": "Occupational Personality Questionnaire (OPQ32)",
-        "verify": "SHL Verify G+ (General Ability)",
-        "verify g+": "SHL Verify G+ (General Ability)",
-        "numerical": "SHL Verify Numerical Reasoning",
-        "verbal": "SHL Verify Verbal Reasoning",
-        "deductive": "SHL Verify Deductive Reasoning",
-        "inductive": "SHL Verify Inductive Reasoning",
-        "mq": "Motivational Questionnaire (MQ)",
-        "motivational": "Motivational Questionnaire (MQ)",
-        "sjt": "Graduate Situational Judgment Test",
-        "situational judgment": "Graduate Situational Judgment Test",
-        "coding": "SHL Coding Simulations",
-        "coding simulation": "SHL Coding Simulations",
-        "360": "SHL 360-Degree Feedback",
-        "video interview": "SHL Video Interview",
-        "jfa": "Job-Focused Assessments (JFA)",
-        "job focused": "Job-Focused Assessments (JFA)",
-        "call center": "SHL Call Center Simulations",
-        "language": "SHL Language Evaluation",
-        "mechanical": "SHL Mechanical Comprehension Test",
-        "checking": "SHL Checking Test (Attention to Detail)",
-        "business skills": "SHL Business Skills Assessments",
-        "technical skills": "SHL Technical Skills Assessments",
-        "gsa": "SHL Verify G+ (General Ability)",
-    }
-
+    items = get_all_catalog_items()
+    
     found = []
     seen = set()
 
-    for short_name, full_name in known_names.items():
-        if short_name in text_lower and full_name not in seen:
-            item = get_catalog_item_by_name(full_name)
-            if item:
+    for item in items:
+        name_lower = item["name"].lower()
+        aliases = [name_lower]
+        
+        if name_lower.startswith("shl "):
+            aliases.append(name_lower[4:])
+            
+        import re
+        match = re.search(r'\(([^)]+)\)', name_lower)
+        if match:
+            acronym = match.group(1).strip()
+            aliases.append(acronym)
+            aliases.append(re.sub(r'\([^)]+\)', '', name_lower).strip())
+
+        if "occupational personality questionnaire" in name_lower:
+            aliases.extend(["opq", "opq32"])
+        elif "verify g+" in name_lower:
+            aliases.extend(["gsa"])
+        elif "motivational" in name_lower:
+            aliases.extend(["mq"])
+        elif "situational judgment" in name_lower:
+            aliases.extend(["sjt"])
+
+        for alias in aliases:
+            if len(alias) >= 3 and alias in text_lower and item["name"] not in seen:
                 found.append(item)
-                seen.add(full_name)
+                seen.add(item["name"])
+                break
 
     return found
 
@@ -94,8 +88,8 @@ async def compare_assessments(text: str) -> str:
     for item in items[:3]:  # Max 3 assessments to compare
         comparison_data.append(
             f"**{item['name']}**\n"
-            f"- Type: {item['assessment_type']}\n"
-            f"- Description: {item['description']}\n"
+            f"- Type: {item.get('test_type', 'K')}\n"
+            f"- Description: {item.get('description', '')}\n"
             f"- Skills measured: {', '.join(item.get('skills', []))}\n"
             f"- Tags: {', '.join(item.get('tags', []))}"
         )

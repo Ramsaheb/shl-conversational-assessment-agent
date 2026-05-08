@@ -15,7 +15,7 @@ def compute_combined_score(item: dict, preferred_types: list[str] | None = None)
 
     Args:
         item: Retrieved item with semantic_score and keyword_score.
-        preferred_types: Optional list of preferred assessment types for bonus.
+        preferred_types: Optional list of preferred type codes (e.g., ["A", "P"]) for boost.
 
     Returns:
         Combined score between 0 and 1.
@@ -26,9 +26,12 @@ def compute_combined_score(item: dict, preferred_types: list[str] | None = None)
     # Metadata bonus: boost if assessment type matches preferred types
     metadata_bonus = 0.0
     if preferred_types:
-        assessment_type = item.get("metadata", {}).get("assessment_type", "")
-        if assessment_type.lower() in [t.lower() for t in preferred_types]:
-            metadata_bonus = 1.0
+        test_type = item.get("metadata", {}).get("test_type", "")
+        # Check if ANY of the item's type codes match ANY preferred type
+        for code in test_type:
+            if code in preferred_types:
+                metadata_bonus = 1.0
+                break
 
     score = (
         SEMANTIC_WEIGHT * semantic
@@ -49,7 +52,7 @@ def rank_results(
     Args:
         items: List of retrieved items.
         top_k: Number of top results to return.
-        preferred_types: Optional preferred assessment types.
+        preferred_types: Optional preferred type codes (e.g., ["A", "P", "K"]).
 
     Returns:
         Top-K items sorted by descending combined score.

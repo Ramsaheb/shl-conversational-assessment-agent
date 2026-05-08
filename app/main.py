@@ -2,8 +2,11 @@
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.utils.logger import get_logger
@@ -12,6 +15,11 @@ from app.retrieval.chroma_client import get_collection
 from app.retrieval.embedding_service import get_embedding_model
 
 logger = get_logger(__name__)
+
+# Resolve paths relative to project root
+BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
 
 
 @asynccontextmanager
@@ -58,6 +66,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files (CSS, JS)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+# Root route — serve the chat UI
+@app.get("/", tags=["UI"], include_in_schema=False)
+async def root():
+    """Serve the chat UI."""
+    return FileResponse(str(TEMPLATES_DIR / "index.html"))
+
 
 # Health endpoint
 @app.get("/health", tags=["Health"])

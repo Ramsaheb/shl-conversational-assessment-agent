@@ -2,12 +2,14 @@
 
 import json
 from pathlib import Path
+from functools import lru_cache
 from app.models.response_models import Recommendation
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
 _catalog_cache: dict | None = None
+_catalog_list_cache: list | None = None
 
 
 def _load_catalog() -> dict:
@@ -21,7 +23,8 @@ def _load_catalog() -> dict:
         for item in items:
             _catalog_cache[item["name"].lower()] = item
             # Also index by id for convenience
-            _catalog_cache[item["id"].lower()] = item
+            if "id" in item:
+                _catalog_cache[item["id"].lower()] = item
     return _catalog_cache
 
 
@@ -39,27 +42,35 @@ def validate_recommendations(recommendations: list[Recommendation]) -> list[Reco
     """
     catalog = _load_catalog()
     validated = []
+    seen_names = set()
 
     for rec in recommendations:
         name_lower = rec.name.lower()
+
+        # Skip duplicates
+        if name_lower in seen_names:
+            continue
+
         # Try exact match first
         if name_lower in catalog:
             item = catalog[name_lower]
             validated.append(Recommendation(
                 name=item["name"],
                 url=item["url"],
-                test_type=item["assessment_type"],
+                test_type=item["test_type"],
             ))
+            seen_names.add(name_lower)
         else:
             # Try partial match
             matched = False
             for cat_name, item in catalog.items():
-                if name_lower in cat_name or cat_name in name_lower:
+                if (name_lower in cat_name or cat_name in name_lower) and item["name"].lower() not in seen_names:
                     validated.append(Recommendation(
                         name=item["name"],
                         url=item["url"],
-                        test_type=item["assessment_type"],
+                        test_type=item["test_type"],
                     ))
+                    seen_names.add(item["name"].lower())
                     matched = True
                     break
             if not matched:
@@ -91,7 +102,10 @@ def get_catalog_item_by_name(name: str) -> dict | None:
 
 
 def get_all_catalog_items() -> list[dict]:
-    """Get all catalog items as a list."""
-    catalog_path = Path(__file__).parent.parent / "data" / "catalog.json"
-    with open(catalog_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    """Get all catalog items as a list (cached)."""
+    global _catalog_list_cache
+    if _catalog_list_cache is None:
+        catalog_path = Path(__file__).parent.parent / "data" / "catalog.json"
+        with open(catalog_path, "r", encoding="utf-8") as f:
+            _catalog_list_cache = json.load(f)
+    return _catalog_list_cache

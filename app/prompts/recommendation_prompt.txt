@@ -4,4 +4,4 @@ Required skills to evaluate: {skills}.
 Based on the SHL assessment catalog, here are the matching assessments:
 {assessment_details}
 
-Provide a brief, professional summary (3-5 sentences) explaining why these {num_recommendations} assessments are recommended for this role. Mention key benefits of each assessment type included. Be concise and actionable. Do NOT invent any assessment names or details beyond what is listed above.
+Provide a brief, professional summary (3-5 sentences) explaining why these {num_recommendations} assessments are recommended for this role. Mention key benefits of each assessment type included. Be concise and actionable. Do NOT invent any assessment names or details beyond what is listed above. IMPORTANT: Do NOT include any URLs in your summary. Only discuss the specific assessments listed above.

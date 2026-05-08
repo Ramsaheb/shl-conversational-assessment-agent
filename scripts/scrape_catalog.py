@@ -43,7 +43,7 @@ def scrape_all_pages(max_pages: int = 35) -> list[dict]:
     all_items = []
     seen_urls = set()
 
-    for page_type in [1, 2]:  # type=1 (skills), type=2 (solutions)
+    for page_type in [1]:  # type=1 (individual skills), removed type=2 (solutions)
         for start in range(0, max_pages * 12, 12):
             url = f"{BASE_URL}?start={start}&type={page_type}"
             logger.info("Scraping: %s", url)

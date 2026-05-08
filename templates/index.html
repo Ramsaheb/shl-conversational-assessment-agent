@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHL Assessment Recommender</title>
+  <meta name="description" content="Conversational AI agent for SHL assessment recommendations">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="app-header">
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>SHL Assessment Recommender</h1>
+          <p class="subtitle">AI-powered assessment selection for hiring</p>
+        </div>
+      </div>
+      <div class="header-badge">
+        <span class="dot"></span> Online
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="app-main">
+
+    <!-- Chat Panel -->
+    <section id="chat-panel">
+      <div id="chat-messages">
+        <div class="message assistant">
+          <div class="message-avatar">AI</div>
+          <div class="message-body">
+            <p>Hello! I'm the SHL Assessment Recommendation Assistant. I can help you find the right assessments for your hiring needs.</p>
+            <p>To get started, tell me about the role you're hiring for.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="chat-input-area">
+        <div class="input-wrapper">
+          <input type="text" id="user-input" placeholder="Describe the role you're hiring for..." autocomplete="off" />
+          <button id="send-btn" title="Send message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-hint">Press Enter to send &middot; Powered by SHL catalog (377 assessments)</p>
+      </div>
+    </section>
+
+    <!-- Recommendations Panel -->
+    <aside id="rec-panel">
+      <h2>Recommendations</h2>
+      <div id="rec-list">
+        <div class="rec-empty">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.35">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          <p>No recommendations yet.</p>
+          <p class="rec-empty-sub">Start a conversation to get assessment suggestions.</p>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

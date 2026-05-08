@@ -25,9 +25,13 @@ class Settings(BaseSettings):
     max_retrieval_results: int = 20
     top_k_recommendations: int = 10
 
+    # Hugging Face (optional)
+    hf_token: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"
 
 
 settings = Settings()

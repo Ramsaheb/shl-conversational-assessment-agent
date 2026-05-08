@@ -31,6 +31,10 @@ INTENT_REFINEMENT = "refinement"
 INTENT_REFUSAL = "refusal"
 INTENT_GREETING = "greeting"
 
+# Turn limit: evaluator caps at 8 total messages (user + assistant).
+# We must produce recommendations before hitting the cap.
+MAX_TURNS = 8
+
 
 def _load_prompt(filename: str) -> str:
     """Load a prompt template."""
@@ -40,16 +44,34 @@ def _load_prompt(filename: str) -> str:
     return ""
 
 
+def _count_turns(messages: list[ChatMessage]) -> int:
+    """Count total conversation turns (both user + assistant)."""
+    return len(messages)
+
+
+def _is_near_turn_limit(messages: list[ChatMessage]) -> bool:
+    """Check if we're approaching the turn limit and must recommend now.
+
+    The evaluator sends the next user message after our reply, so:
+    - Current messages count = N
+    - Our reply adds 1 (assistant) → N+1
+    - User reply adds 1 → N+2
+    - If N+2 >= MAX_TURNS, user won't be able to continue, so we MUST recommend now.
+    """
+    return len(messages) >= MAX_TURNS - 2  # i.e., >= 6 messages
+
+
 def detect_intent(messages: list[ChatMessage], state: dict) -> str:
     """Detect the user's intent using deterministic Python logic.
 
     Priority order:
-    1. Refusal (safety first)
-    2. Comparison (explicit comparison request)
-    3. Refinement (modifying previous recommendations)
-    4. Recommendation (enough context to recommend)
-    5. Greeting (first message is a greeting)
-    6. Clarification (need more information)
+    1. Forced recommendation (near turn limit)
+    2. Refusal (safety first)
+    3. Comparison (explicit comparison request)
+    4. Refinement (modifying previous recommendations)
+    5. Recommendation (enough context to recommend)
+    6. Greeting (first message is a greeting)
+    7. Clarification (need more information)
 
     Args:
         messages: Full conversation history.
@@ -59,6 +81,16 @@ def detect_intent(messages: list[ChatMessage], state: dict) -> str:
         Intent string constant.
     """
     latest_msg = messages[-1].content.lower().strip()
+
+    # 0. Check turn limit — force recommendation if near cap
+    if _is_near_turn_limit(messages):
+        # Still check for refusal even at the limit
+        should_refuse, _, _ = detect_refusal(latest_msg)
+        if should_refuse:
+            return INTENT_REFUSAL
+        # Force recommendation with whatever context we have
+        logger.info("Near turn limit (%d messages), forcing recommendation", len(messages))
+        return INTENT_RECOMMENDATION
 
     # 1. Check for refusal
     should_refuse, _, _ = detect_refusal(latest_msg)
@@ -73,22 +105,14 @@ def detect_intent(messages: list[ChatMessage], state: dict) -> str:
     ]
     for kw in comparison_keywords:
         if re.search(kw, latest_msg):
-            # Verify at least some assessments are mentioned
             found = find_assessments_to_compare(latest_msg)
             if len(found) >= 2:
                 return INTENT_COMPARISON
-            # Even with one, if comparison keyword is present
             if found:
                 return INTENT_COMPARISON
 
     # 3. Check for refinement (only if there were previous recommendations)
-    has_previous_recs = any(
-        msg.role == "assistant" and any(
-            indicator in msg.content.lower()
-            for indicator in ["recommend", "suggest", "here are", "assessment"]
-        )
-        for msg in messages[:-1]
-    )
+    has_previous_recs = any(msg.role == "assistant" for msg in messages[:-1])
     refinement_keywords = [
         "also add", "include", "remove", "replace", "instead",
         "actually", "what about", "add more", "fewer", "more",
@@ -107,7 +131,16 @@ def detect_intent(messages: list[ChatMessage], state: dict) -> str:
         return INTENT_GREETING
 
     # 5. Check if enough context for recommendation
-    if is_state_sufficient_for_recommendation(state):
+    # Be more aggressive about recommending if conversation is getting long
+    if len(messages) >= 4:
+        # After 2 user turns, bias toward recommending with best-effort
+        if state.get("role") or state.get("skills") or any([
+            state.get("needs_cognitive"), state.get("needs_personality"),
+            state.get("needs_technical"), state.get("needs_behavioral"),
+        ]):
+            return INTENT_RECOMMENDATION
+
+    if is_state_sufficient_for_recommendation(state, messages):
         return INTENT_RECOMMENDATION
 
     # 6. Default: clarification
@@ -131,7 +164,8 @@ async def process_conversation(messages: list[ChatMessage]) -> ChatResponse:
     """
     # Step 1: Extract conversation state
     state = extract_conversation_state(messages)
-    logger.info("Extracted state - Intent detection starting...")
+    logger.info("Extracted state - role=%s, seniority=%s, turns=%d",
+                state.get("role"), state.get("seniority"), len(messages))
 
     # Step 2: Detect intent
     intent = detect_intent(messages, state)
@@ -203,9 +237,6 @@ async def _handle_clarification(
         missing.append("the seniority level (entry-level, mid-level, senior, manager)")
     if not state.get("skills"):
         missing.append("key skills or competencies to evaluate")
-    if not any([state.get("needs_cognitive"), state.get("needs_personality"),
-                state.get("needs_technical"), state.get("needs_behavioral")]):
-        missing.append("what type of assessment you need (cognitive, personality, technical, or behavioral)")
 
     latest_msg = messages[-1].content
 
@@ -235,22 +266,37 @@ async def _handle_recommendation(
 ) -> ChatResponse:
     """Generate assessment recommendations."""
     search_query = build_search_query(state)
+
+    # If search query is empty (edge case near turn limit), use raw user messages
+    if not search_query.strip():
+        user_msgs = [m.content for m in messages if m.role == "user"]
+        search_query = " ".join(user_msgs[-2:])  # Last 2 user messages
+
     logger.info("Search query: %s", search_query)
 
     recommendations, summary = await get_recommendations(
         search_query=search_query,
         state=state,
-        top_k=min(7, 10),  # Default to 7, max 10
+        top_k=min(7, 10),
     )
 
     if not recommendations:
-        # Fallback to clarification
-        return await _handle_clarification(messages, state)
+        # Near turn limit? Try broader search
+        if _is_near_turn_limit(messages):
+            user_msgs = " ".join(m.content for m in messages if m.role == "user")
+            recommendations, summary = await get_recommendations(
+                search_query=user_msgs,
+                state=state,
+                top_k=7,
+            )
+
+        if not recommendations:
+            return await _handle_clarification(messages, state)
 
     return ChatResponse(
         reply=summary,
         recommendations=recommendations,
-        end_of_conversation=False,
+        end_of_conversation=True,
     )
 
 
@@ -258,7 +304,6 @@ async def _handle_refinement(
     messages: list[ChatMessage], state: dict
 ) -> ChatResponse:
     """Handle refinement of previous recommendations."""
-    # Re-extract state with full context (includes refinement request)
     search_query = build_search_query(state)
 
     # Add refinement context to query

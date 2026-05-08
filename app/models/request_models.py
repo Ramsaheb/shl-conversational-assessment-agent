@@ -19,5 +19,5 @@ class ChatRequest(BaseModel):
     """Request body for the POST /chat endpoint."""
 
     messages: list[ChatMessage] = Field(
-        ..., min_length=1, max_length=50, description="Conversation history"
+        ..., min_length=1, max_length=20, description="Conversation history"
     )
