@@ -1,0 +1,24 @@
+# Core
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-dotenv==1.0.1
+
+# Vector DB & Embeddings
+chromadb==0.6.3
+sentence-transformers==3.3.1
+
+# LLM
+groq==0.15.0
+
+# HTTP & Scraping
+httpx==0.28.1
+beautifulsoup4==4.12.3
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.25.0
+
+# Logging
+python-json-logger==3.2.1

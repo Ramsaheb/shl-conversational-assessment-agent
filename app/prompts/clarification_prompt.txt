@@ -1,0 +1,8 @@
+The user said: "{user_message}"
+
+Current understanding of their needs:
+{current_state}
+
+We still need to know: {missing_info}
+
+Based on what we know so far, ask 1-2 focused, conversational clarifying questions to help narrow down the right SHL assessments. Be specific and helpful. Don't ask more than 2 questions at a time. If the user provided some information, acknowledge it before asking follow-ups.

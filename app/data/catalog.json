@@ -1,0 +1,372 @@
+[
+  {
+    "id": "opq32",
+    "name": "Occupational Personality Questionnaire (OPQ32)",
+    "url": "https://www.shl.com/products/assessments/personality-assessment/shl-occupational-personality-questionnaire-opq/",
+    "description": "Comprehensive personality assessment measuring 32 workplace behavior characteristics. Predicts performance, identifies leadership potential, and assesses cultural fit across all job levels.",
+    "assessment_type": "Personality",
+    "skills": ["leadership", "teamwork", "communication", "decision-making", "interpersonal skills", "emotional intelligence"],
+    "tags": ["personality", "behavioral", "workplace behavior", "cultural fit", "leadership potential"],
+    "keywords": ["OPQ", "OPQ32", "personality questionnaire", "Big Five", "work style", "behavioral assessment"]
+  },
+  {
+    "id": "verify_g_plus",
+    "name": "SHL Verify G+ (General Ability)",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Comprehensive cognitive ability test combining numerical, deductive, and inductive reasoning. Measures general mental ability and potential to learn and adapt in the workplace.",
+    "assessment_type": "Cognitive",
+    "skills": ["numerical reasoning", "deductive reasoning", "inductive reasoning", "problem-solving", "critical thinking"],
+    "tags": ["cognitive", "ability", "aptitude", "reasoning", "general mental ability", "GMA"],
+    "keywords": ["Verify", "G+", "cognitive", "ability test", "reasoning", "aptitude", "IQ"]
+  },
+  {
+    "id": "verify_numerical",
+    "name": "SHL Verify Numerical Reasoning",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Assesses ability to interpret and analyze numerical data including tables, graphs, and statistics. Essential for roles requiring data-driven decision making.",
+    "assessment_type": "Cognitive",
+    "skills": ["numerical reasoning", "data interpretation", "statistical analysis", "mathematical ability"],
+    "tags": ["cognitive", "numerical", "quantitative", "data analysis", "mathematics"],
+    "keywords": ["numerical", "math", "quantitative", "data", "statistics", "numbers", "calculation"]
+  },
+  {
+    "id": "verify_verbal",
+    "name": "SHL Verify Verbal Reasoning",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Measures ability to understand and evaluate written information, draw logical conclusions from text passages. Critical for roles requiring strong communication and comprehension.",
+    "assessment_type": "Cognitive",
+    "skills": ["verbal reasoning", "reading comprehension", "critical analysis", "written communication"],
+    "tags": ["cognitive", "verbal", "language", "comprehension", "communication"],
+    "keywords": ["verbal", "reading", "comprehension", "language", "written", "English"]
+  },
+  {
+    "id": "verify_deductive",
+    "name": "SHL Verify Deductive Reasoning",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Evaluates logical thinking and ability to draw conclusions from given premises. Tests structured problem-solving ability essential for analytical roles.",
+    "assessment_type": "Cognitive",
+    "skills": ["deductive reasoning", "logical thinking", "analytical skills", "problem-solving"],
+    "tags": ["cognitive", "deductive", "logical", "analytical", "reasoning"],
+    "keywords": ["deductive", "logic", "analytical", "structured thinking", "reasoning"]
+  },
+  {
+    "id": "verify_inductive",
+    "name": "SHL Verify Inductive Reasoning",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Measures ability to identify patterns and conceptual thinking using abstract and diagrammatic information. Assesses innovative thinking capability.",
+    "assessment_type": "Cognitive",
+    "skills": ["inductive reasoning", "pattern recognition", "abstract thinking", "conceptual thinking"],
+    "tags": ["cognitive", "inductive", "abstract", "diagrammatic", "pattern recognition"],
+    "keywords": ["inductive", "pattern", "abstract", "diagrammatic", "conceptual"]
+  },
+  {
+    "id": "mq",
+    "name": "Motivational Questionnaire (MQ)",
+    "url": "https://www.shl.com/products/assessments/personality-assessment/shl-motivation-questionnaire-mq/",
+    "description": "Assesses factors that drive and motivate individuals in the workplace. Identifies what energizes or demotivates employees for better job-person fit.",
+    "assessment_type": "Personality",
+    "skills": ["motivation", "engagement", "job satisfaction", "cultural alignment"],
+    "tags": ["personality", "motivation", "engagement", "drive", "job fit"],
+    "keywords": ["MQ", "motivation", "motivational", "engagement", "drive", "energy"]
+  },
+  {
+    "id": "sjt_graduate",
+    "name": "Graduate Situational Judgment Test",
+    "url": "https://www.shl.com/products/assessments/behavioral-assessments/situation-judgement-tests-sjt/",
+    "description": "Realistic work scenarios designed for graduate and entry-level candidates. Evaluates judgment, decision-making, and interpersonal skills in workplace situations.",
+    "assessment_type": "Behavioral",
+    "skills": ["judgment", "decision-making", "interpersonal skills", "problem-solving", "professional behavior"],
+    "tags": ["behavioral", "situational judgment", "graduate", "entry-level", "workplace scenarios"],
+    "keywords": ["SJT", "situational judgment", "graduate", "entry-level", "junior", "scenarios"]
+  },
+  {
+    "id": "sjt_manager",
+    "name": "Manager Situational Judgment Test",
+    "url": "https://www.shl.com/products/assessments/behavioral-assessments/situation-judgement-tests-sjt/",
+    "description": "Assesses managerial judgment through realistic leadership scenarios. Evaluates delegation, conflict resolution, team management, and strategic thinking.",
+    "assessment_type": "Behavioral",
+    "skills": ["management", "delegation", "conflict resolution", "team leadership", "strategic thinking"],
+    "tags": ["behavioral", "situational judgment", "manager", "leadership", "supervisory"],
+    "keywords": ["SJT", "manager", "leadership", "supervisory", "team lead", "delegation"]
+  },
+  {
+    "id": "coding_sim",
+    "name": "SHL Coding Simulations",
+    "url": "https://www.shl.com/products/assessments/skills-and-simulations/coding-simulations/",
+    "description": "AI-powered coding assessment supporting 50+ programming languages. Candidates write, run, and test code in a realistic IDE environment. Evaluates logic, accuracy, and best practices.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["programming", "software development", "debugging", "code quality", "algorithmic thinking"],
+    "tags": ["technical", "coding", "programming", "software engineering", "simulation"],
+    "keywords": ["coding", "programming", "developer", "software engineer", "Java", "Python", "JavaScript", "C++", "code"]
+  },
+  {
+    "id": "tech_skills",
+    "name": "SHL Technical Skills Assessments",
+    "url": "https://www.shl.com/products/assessments/skills-and-simulations/technical-skills/",
+    "description": "Comprehensive suite of IT and technical knowledge assessments covering frameworks, databases, cloud platforms, and more.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["technical knowledge", "IT skills", "framework proficiency", "system administration"],
+    "tags": ["technical", "IT", "technology", "knowledge test", "skills assessment"],
+    "keywords": ["technical", "IT", "technology", ".NET", "SQL", "cloud", "DevOps", "infrastructure"]
+  },
+  {
+    "id": "business_skills",
+    "name": "SHL Business Skills Assessments",
+    "url": "https://www.shl.com/products/assessments/skills-and-simulations/business-skills/",
+    "description": "Assessments for Microsoft Office proficiency, data entry accuracy, typing speed, and administrative task performance.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["Microsoft Office", "data entry", "typing", "administrative skills", "spreadsheet proficiency"],
+    "tags": ["business skills", "office", "administrative", "clerical", "data entry"],
+    "keywords": ["Office", "Excel", "Word", "typing", "data entry", "administrative", "clerical", "business"]
+  },
+  {
+    "id": "call_center_sim",
+    "name": "SHL Call Center Simulations",
+    "url": "https://www.shl.com/products/assessments/skills-and-simulations/call-center-simulations/",
+    "description": "Interactive simulations that replicate real customer service environments. Assesses multitasking, communication, problem resolution, and customer empathy.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["customer service", "multitasking", "communication", "problem resolution", "empathy"],
+    "tags": ["simulation", "call center", "customer service", "contact center", "BPO"],
+    "keywords": ["call center", "customer service", "contact center", "support", "helpdesk", "BPO"]
+  },
+  {
+    "id": "language_eval",
+    "name": "SHL Language Evaluation",
+    "url": "https://www.shl.com/products/assessments/skills-and-simulations/language-evaluation/",
+    "description": "AI-powered assessment of verbal and written language proficiency. Evaluates grammar, vocabulary, fluency, and comprehension for multilingual roles.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["language proficiency", "grammar", "vocabulary", "fluency", "written communication"],
+    "tags": ["language", "proficiency", "communication", "multilingual", "English"],
+    "keywords": ["language", "English", "proficiency", "fluency", "grammar", "communication skills"]
+  },
+  {
+    "id": "shl_360",
+    "name": "SHL 360-Degree Feedback",
+    "url": "https://www.shl.com/products/360/",
+    "description": "Multi-rater feedback tool for comprehensive performance evaluation. Gathers input from managers, peers, direct reports, and self for leadership development.",
+    "assessment_type": "Development & 360",
+    "skills": ["leadership development", "self-awareness", "feedback", "performance management"],
+    "tags": ["360", "feedback", "development", "leadership", "multi-rater", "performance"],
+    "keywords": ["360", "feedback", "multi-rater", "performance review", "leadership development"]
+  },
+  {
+    "id": "global_skills_report",
+    "name": "Global Skills Development Report",
+    "url": "https://www.shl.com/products/product-catalog/view/global-skills-development-report/",
+    "description": "Comprehensive development report identifying strengths, development areas, and personalized action plans based on assessment results.",
+    "assessment_type": "Development & 360",
+    "skills": ["development planning", "strengths identification", "skills gap analysis"],
+    "tags": ["development", "report", "skills", "strengths", "action plan"],
+    "keywords": ["development report", "skills report", "strengths", "development areas"]
+  },
+  {
+    "id": "account_manager_sol",
+    "name": "Account Manager Solution",
+    "url": "https://www.shl.com/products/product-catalog/view/account-manager-solution/",
+    "description": "Job-focused assessment for Account Manager roles. Evaluates sales aptitude, relationship building, negotiation, and client management capabilities.",
+    "assessment_type": "Job-Focused",
+    "skills": ["sales", "relationship management", "negotiation", "client management", "account management"],
+    "tags": ["job-focused", "sales", "account manager", "client-facing", "relationship"],
+    "keywords": ["account manager", "sales", "client", "relationship", "B2B", "account executive"]
+  },
+  {
+    "id": "admin_professional",
+    "name": "Administrative Professional - Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/administrative-professional-short-form/",
+    "description": "Streamlined assessment for administrative and office professional roles. Evaluates organizational skills, attention to detail, and office management abilities.",
+    "assessment_type": "Job-Focused",
+    "skills": ["organization", "attention to detail", "office management", "administrative skills"],
+    "tags": ["job-focused", "administrative", "office", "clerical", "professional"],
+    "keywords": ["admin", "administrative", "office", "secretary", "executive assistant", "clerical"]
+  },
+  {
+    "id": "branch_manager",
+    "name": "Branch Manager - Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/branch-manager-short-form/",
+    "description": "Assessment designed for branch and retail management roles. Evaluates leadership, operations management, customer focus, and team development skills.",
+    "assessment_type": "Job-Focused",
+    "skills": ["branch management", "leadership", "operations", "customer focus", "team development"],
+    "tags": ["job-focused", "manager", "branch", "retail", "operations"],
+    "keywords": ["branch manager", "store manager", "retail manager", "operations manager"]
+  },
+  {
+    "id": "cashier_sol",
+    "name": "Cashier Solution",
+    "url": "https://www.shl.com/products/product-catalog/view/cashier-solution/",
+    "description": "Role-specific assessment for cashier and retail positions. Evaluates customer service orientation, accuracy, speed, and basic numeracy.",
+    "assessment_type": "Job-Focused",
+    "skills": ["customer service", "numeracy", "accuracy", "speed", "cash handling"],
+    "tags": ["job-focused", "retail", "cashier", "customer service", "entry-level"],
+    "keywords": ["cashier", "retail", "checkout", "customer service", "store", "point of sale"]
+  },
+  {
+    "id": "bank_admin_assistant",
+    "name": "Bank Administrative Assistant - Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/bank-administrative-assistant-short-form/",
+    "description": "Tailored assessment for banking administrative roles. Evaluates financial literacy, attention to detail, regulatory awareness, and client communication.",
+    "assessment_type": "Job-Focused",
+    "skills": ["banking", "financial literacy", "attention to detail", "client communication", "compliance"],
+    "tags": ["job-focused", "banking", "finance", "administrative", "assistant"],
+    "keywords": ["bank", "banking", "financial", "teller", "administrative assistant", "finance"]
+  },
+  {
+    "id": "bank_collections_agent",
+    "name": "Bank Collections Agent - Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/bank-collections-agent-short-form/",
+    "description": "Assessment for collections and recovery roles in banking. Evaluates negotiation, persistence, empathy, and compliance awareness.",
+    "assessment_type": "Job-Focused",
+    "skills": ["negotiation", "persistence", "empathy", "compliance", "communication"],
+    "tags": ["job-focused", "banking", "collections", "recovery", "agent"],
+    "keywords": ["collections", "recovery", "bank", "debt", "agent", "collector"]
+  },
+  {
+    "id": "agency_manager",
+    "name": "Agency Manager Solution",
+    "url": "https://www.shl.com/products/product-catalog/view/agency-manager-solution/",
+    "description": "Assessment for insurance and agency management roles. Evaluates leadership, business development, team management, and strategic planning.",
+    "assessment_type": "Job-Focused",
+    "skills": ["agency management", "leadership", "business development", "team management", "strategic planning"],
+    "tags": ["job-focused", "insurance", "agency", "manager", "leadership"],
+    "keywords": ["agency manager", "insurance", "agent", "branch", "agency"]
+  },
+  {
+    "id": "apprentice_jfa",
+    "name": "Apprentice 8.0 Job Focused Assessment",
+    "url": "https://www.shl.com/products/product-catalog/view/apprentice-8-0-job-focused-assessment/",
+    "description": "Entry-level assessment designed for apprenticeship programs. Evaluates learning potential, basic aptitude, work ethic, and trainability.",
+    "assessment_type": "Job-Focused",
+    "skills": ["learning potential", "basic aptitude", "work ethic", "trainability"],
+    "tags": ["job-focused", "apprentice", "entry-level", "trainee", "graduate"],
+    "keywords": ["apprentice", "apprenticeship", "trainee", "entry-level", "graduate", "junior"]
+  },
+  {
+    "id": "bank_ops_supervisor",
+    "name": "Bank Operations Supervisor - Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/bank-operations-supervisor-short-form/",
+    "description": "Assessment for banking operations supervisory roles. Evaluates process management, team supervision, quality control, and operational efficiency.",
+    "assessment_type": "Job-Focused",
+    "skills": ["operations management", "supervision", "quality control", "process management"],
+    "tags": ["job-focused", "banking", "operations", "supervisor", "management"],
+    "keywords": ["bank operations", "supervisor", "operations manager", "banking", "team lead"]
+  },
+  {
+    "id": "bookkeeping_clerk",
+    "name": "Bookkeeping, Accounting, Auditing Clerk Short Form",
+    "url": "https://www.shl.com/products/product-catalog/view/bookkeeping-accounting-auditing-clerk-short-form/",
+    "description": "Assessment for financial record-keeping roles. Evaluates accounting knowledge, attention to detail, numerical accuracy, and compliance awareness.",
+    "assessment_type": "Job-Focused",
+    "skills": ["bookkeeping", "accounting", "auditing", "numerical accuracy", "compliance"],
+    "tags": ["job-focused", "finance", "accounting", "bookkeeping", "auditing"],
+    "keywords": ["bookkeeping", "accounting", "auditing", "clerk", "finance", "ledger", "accounts"]
+  },
+  {
+    "id": "jfa_general",
+    "name": "Job-Focused Assessments (JFA)",
+    "url": "https://www.shl.com/products/assessments/job-focused-assessments/",
+    "description": "Curated assessment bundles combining cognitive, personality, and behavioral measures tailored to specific job families. Available for hundreds of roles across industries.",
+    "assessment_type": "Job-Focused",
+    "skills": ["role-specific competencies", "job fit", "performance prediction"],
+    "tags": ["job-focused", "comprehensive", "multi-assessment", "role-specific"],
+    "keywords": ["JFA", "job focused", "role-specific", "tailored", "comprehensive assessment"]
+  },
+  {
+    "id": "video_interview",
+    "name": "SHL Video Interview",
+    "url": "https://www.shl.com/products/video-interviews/",
+    "description": "AI-powered video interviewing platform for structured candidate screening. Analyzes verbal responses for competency alignment and provides standardized evaluation.",
+    "assessment_type": "Behavioral",
+    "skills": ["communication", "presentation", "competency demonstration", "structured response"],
+    "tags": ["interview", "video", "screening", "AI-powered", "structured"],
+    "keywords": ["video interview", "screening", "interview", "AI", "structured interview"]
+  },
+  {
+    "id": "mechanical_comp",
+    "name": "SHL Mechanical Comprehension Test",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Assesses understanding of mechanical and physical principles. Essential for engineering, manufacturing, and technical trade roles.",
+    "assessment_type": "Cognitive",
+    "skills": ["mechanical reasoning", "physics", "spatial awareness", "technical aptitude"],
+    "tags": ["cognitive", "mechanical", "technical", "engineering", "manufacturing"],
+    "keywords": ["mechanical", "engineering", "physics", "technical", "manufacturing", "trades"]
+  },
+  {
+    "id": "checking_test",
+    "name": "SHL Checking Test (Attention to Detail)",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Measures speed and accuracy in checking and comparing information. Critical for roles requiring high attention to detail and data accuracy.",
+    "assessment_type": "Cognitive",
+    "skills": ["attention to detail", "accuracy", "speed", "data checking", "error detection"],
+    "tags": ["cognitive", "checking", "attention to detail", "accuracy", "clerical"],
+    "keywords": ["checking", "attention to detail", "accuracy", "proofreading", "data quality"]
+  },
+  {
+    "id": "reading_comp",
+    "name": "SHL Reading Comprehension Test",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Evaluates ability to read and understand written materials quickly and accurately. Suitable for roles requiring document processing and information extraction.",
+    "assessment_type": "Cognitive",
+    "skills": ["reading comprehension", "information extraction", "document processing"],
+    "tags": ["cognitive", "reading", "comprehension", "language", "document"],
+    "keywords": ["reading", "comprehension", "document", "information", "processing"]
+  },
+  {
+    "id": "calculation_test",
+    "name": "SHL Calculation Test",
+    "url": "https://www.shl.com/products/assessments/cognitive-assessments/",
+    "description": "Tests basic arithmetic and mathematical calculation ability. Designed for roles requiring everyday numerical computation skills.",
+    "assessment_type": "Cognitive",
+    "skills": ["arithmetic", "calculation", "basic mathematics", "numeracy"],
+    "tags": ["cognitive", "calculation", "arithmetic", "numeracy", "mathematics"],
+    "keywords": ["calculation", "arithmetic", "math", "numeracy", "computation"]
+  },
+  {
+    "id": "ucf_competencies",
+    "name": "Universal Competency Framework (UCF) Assessments",
+    "url": "https://www.shl.com/products/assessments/behavioral-assessments/universal-competency-framework/",
+    "description": "Assessments mapped to SHL's Universal Competency Framework covering 8 competency domains and 20 competencies. Provides standardized evaluation across roles.",
+    "assessment_type": "Behavioral",
+    "skills": ["competency assessment", "behavioral evaluation", "standardized measurement"],
+    "tags": ["behavioral", "competency", "framework", "standardized", "UCF"],
+    "keywords": ["UCF", "competency", "framework", "behavioral", "standardized"]
+  },
+  {
+    "id": "net_framework",
+    "name": ".NET Framework 4.5 Assessment",
+    "url": "https://www.shl.com/products/product-catalog/view/net-framework-4-5/",
+    "description": "Technical knowledge assessment for .NET Framework 4.5 proficiency. Tests C#, ASP.NET, Entity Framework, and related Microsoft technology skills.",
+    "assessment_type": "Skills & Simulations",
+    "skills": [".NET", "C#", "ASP.NET", "Entity Framework", "Microsoft technologies"],
+    "tags": ["technical", ".NET", "Microsoft", "programming", "framework"],
+    "keywords": [".NET", "C#", "ASP.NET", "Microsoft", "Visual Studio", "framework"]
+  },
+  {
+    "id": "accounts_payable",
+    "name": "Accounts Payable Assessment",
+    "url": "https://www.shl.com/products/product-catalog/view/accounts-payable-new/",
+    "description": "Assesses knowledge and skills for accounts payable roles including invoice processing, payment management, and vendor relations.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["accounts payable", "invoice processing", "payment management", "vendor management"],
+    "tags": ["finance", "accounting", "accounts payable", "business skills"],
+    "keywords": ["accounts payable", "AP", "invoice", "payment", "vendor", "finance"]
+  },
+  {
+    "id": "accounts_receivable",
+    "name": "Accounts Receivable Assessment",
+    "url": "https://www.shl.com/products/product-catalog/view/accounts-receivable-new/",
+    "description": "Tests competency in accounts receivable processes including billing, collections, credit management, and revenue tracking.",
+    "assessment_type": "Skills & Simulations",
+    "skills": ["accounts receivable", "billing", "collections", "credit management"],
+    "tags": ["finance", "accounting", "accounts receivable", "business skills"],
+    "keywords": ["accounts receivable", "AR", "billing", "collections", "credit", "revenue"]
+  },
+  {
+    "id": "reservation_agent",
+    "name": "Bilingual Spanish Reservation Agent Solution",
+    "url": "https://www.shl.com/products/product-catalog/view/bilingual-spanish-reservation-agent-solution/",
+    "description": "Bilingual assessment for reservation and booking agent roles. Evaluates customer service, language proficiency, multitasking, and booking system aptitude.",
+    "assessment_type": "Job-Focused",
+    "skills": ["bilingual communication", "customer service", "reservation management", "multitasking"],
+    "tags": ["job-focused", "bilingual", "Spanish", "customer service", "reservations"],
+    "keywords": ["reservation", "booking", "bilingual", "Spanish", "agent", "hospitality", "travel"]
+  }
+]

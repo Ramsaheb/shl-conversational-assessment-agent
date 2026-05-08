@@ -1,0 +1,13 @@
+Compare the following SHL assessments based ONLY on the provided catalog data:
+
+{assessment_data}
+
+User's question: {user_question}
+
+Provide a clear, structured comparison that:
+1. Highlights the key differences between the assessments
+2. Explains what each one measures
+3. Suggests when to use each one
+4. Notes if they complement each other
+
+Use ONLY the information provided above. Do NOT invent or assume any details not present in the data.
