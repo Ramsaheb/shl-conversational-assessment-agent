@@ -35,7 +35,7 @@
       "category": "2. Schema Compliance",
       "name": "Latency < 30s",
       "status": "PASS",
-      "detail": "4.0s",
+      "detail": "3.5s",
       "severity": "CRITICAL"
     },
     {
@@ -322,14 +322,14 @@
       "category": "7. Comparison",
       "name": "Comparison reply len > 20",
       "status": "PASS",
-      "detail": "len=2044",
+      "detail": "len=1949",
       "severity": "MEDIUM"
     },
     {
       "category": "7. Comparison",
       "name": "Comparison reply len > 20",
       "status": "PASS",
-      "detail": "len=1484",
+      "detail": "len=1453",
       "severity": "MEDIUM"
     },
     {
@@ -483,28 +483,28 @@
       "category": "12. Performance",
       "name": "Call 1 latency < 30s",
       "status": "PASS",
-      "detail": "2.6s",
+      "detail": "2.5s",
       "severity": "CRITICAL"
     },
     {
       "category": "12. Performance",
       "name": "Call 2 latency < 30s",
       "status": "PASS",
-      "detail": "2.6s",
+      "detail": "2.5s",
       "severity": "CRITICAL"
     },
     {
       "category": "12. Performance",
       "name": "Call 3 latency < 30s",
       "status": "PASS",
-      "detail": "3.7s",
+      "detail": "5.7s",
       "severity": "CRITICAL"
     },
     {
       "category": "12. Performance",
       "name": "Average latency reasonable",
       "status": "PASS",
-      "detail": "avg=2.9s",
+      "detail": "avg=3.6s",
       "severity": "MEDIUM"
     },
     {
@@ -588,7 +588,7 @@
       "category": "16. State Extraction",
       "name": "JD input: not refused as off-topic",
       "status": "PASS",
-      "detail": "reply: For the mid-level Software Engineer role, I recommend the fo...",
+      "detail": "reply: For the mid-level Software Engineer role, we recommend the f...",
       "severity": "HIGH"
     }
   ]

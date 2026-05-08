@@ -84,64 +84,66 @@ def extract_conversation_state(messages: list) -> dict:
         "raw_requirements": [],
     }
 
-    # Combine all user messages for analysis
-    user_text = " ".join(
-        msg.content for msg in messages if msg.role == "user"
-    ).lower()
+    # Combine all user messages for analysis, but for context like role/seniority,
+    # we want to prioritize the most recent messages.
+    user_messages_newest_first = [msg.content.lower() for msg in reversed(messages) if msg.role == "user"]
+    full_user_text = " ".join(msg.content.lower() for msg in messages if msg.role == "user")
 
-    # Extract role/job title
+    # Extract role/job title (search from newest message to oldest)
     role_patterns = [
         r"(?:hiring|recruit|assess|evaluating|looking for|need.+?for)\s+(?:a\s+)?(.+?)(?:\s+(?:role|position|candidate|developer|engineer|manager|analyst|specialist))",
         r"(?:for\s+(?:a|an)\s+)(.+?)(?:\s+(?:role|position|job))",
         r"(?:role|position|job)\s*(?:is|:)\s*(.+?)(?:\.|,|$)",
         r"(?:hiring|recruiting)\s+(?:a\s+|an\s+)?(.+?)(?:\s+who|\s+with|\s+that|\.|,|$)",
     ]
-    for pattern in role_patterns:
-        match = re.search(pattern, user_text)
-        if match:
-            role_text = match.group(1).strip()
-            # Clean up the role text
-            role_text = re.sub(r'\b(i need|we need|looking for|hiring)\b', '', role_text).strip()
-            if len(role_text) > 2:
-                state["role"] = role_text.title()
-                break
+    
+    role_keywords = [
+        "developer", "engineer", "manager", "analyst", "designer",
+        "architect", "scientist", "administrator", "consultant",
+        "coordinator", "specialist", "assistant", "supervisor",
+        "director", "executive", "agent", "representative", "cashier",
+        "accountant", "auditor", "bookkeeper", "teller", "clerk",
+        "technician", "nurse", "teacher", "salesperson", "operator",
+    ]
 
-    # Fallback: look for common role keywords
-    if not state["role"]:
-        role_keywords = [
-            "developer", "engineer", "manager", "analyst", "designer",
-            "architect", "scientist", "administrator", "consultant",
-            "coordinator", "specialist", "assistant", "supervisor",
-            "director", "executive", "agent", "representative", "cashier",
-            "accountant", "auditor", "bookkeeper", "teller", "clerk",
-            "technician", "nurse", "teacher", "salesperson", "operator",
-        ]
-        for keyword in role_keywords:
-            if keyword in user_text:
-                # Get surrounding context for a better role name
-                idx = user_text.index(keyword)
-                start = max(0, idx - 30)
-                end = min(len(user_text), idx + len(keyword) + 20)
-                context = user_text[start:end].strip()
-                words = context.split()
-                for i, w in enumerate(words):
-                    if keyword in w:
-                        role_parts = words[max(0, i-2):i+1]
-                        state["role"] = " ".join(role_parts).strip().title()
-                        break
-                if state["role"]:
+    for msg_text in user_messages_newest_first:
+        if state["role"]:
+            break
+            
+        for pattern in role_patterns:
+            match = re.search(pattern, msg_text)
+            if match:
+                role_text = match.group(1).strip()
+                role_text = re.sub(r'\b(i need|we need|looking for|hiring)\b', '', role_text).strip()
+                if len(role_text) > 2:
+                    state["role"] = role_text.title()
                     break
+                    
+        if not state["role"]:
+            for keyword in role_keywords:
+                if keyword in msg_text:
+                    idx = msg_text.index(keyword)
+                    start = max(0, idx - 30)
+                    end = min(len(msg_text), idx + len(keyword) + 20)
+                    context = msg_text[start:end].strip()
+                    words = context.split()
+                    for i, w in enumerate(words):
+                        if keyword in w:
+                            role_parts = words[max(0, i-2):i+1]
+                            state["role"] = " ".join(role_parts).strip().title()
+                            break
+                    if state["role"]:
+                        break
 
-    # Check for job description text
+    # Check for job description text (search in full text is fine, usually only provided once)
     jd_patterns = [
         r"(?:job description|jd)\s*[:;]\s*(.+?)(?:$)",
         r"(?:here is|here's)\s+(?:a|the)\s+(?:text|job description|jd)\s*[:;]?\s*(.+?)(?:$)",
     ]
     for pattern in jd_patterns:
-        match = re.search(pattern, user_text, re.DOTALL)
+        match = re.search(pattern, full_user_text, re.DOTALL)
         if match:
             jd_text = match.group(1).strip()
-            # Extract role from JD if not already found
             if not state["role"]:
                 for keyword in ["developer", "engineer", "manager", "analyst", "designer",
                                 "architect", "specialist", "coordinator", "administrator"]:
@@ -156,17 +158,21 @@ def extract_conversation_state(messages: list) -> dict:
                         if state["role"]:
                             break
 
-    # Extract seniority — keyword matching first, then year-based fallback
-    for level, keywords in SENIORITY_KEYWORDS.items():
-        if any(kw in user_text for kw in keywords):
-            state["seniority"] = level
+    # Extract seniority — search from newest to oldest
+    for msg_text in user_messages_newest_first:
+        if state["seniority"]:
             break
+        for level, keywords in SENIORITY_KEYWORDS.items():
+            if any(kw in msg_text for kw in keywords):
+                state["seniority"] = level
+                break
+        
+        if not state["seniority"]:
+            year_seniority = _detect_seniority_from_years(msg_text)
+            if year_seniority:
+                state["seniority"] = year_seniority
 
-    # Fallback: year-based seniority detection (fixes dead code)
-    if not state["seniority"]:
-        year_seniority = _detect_seniority_from_years(user_text)
-        if year_seniority:
-            state["seniority"] = year_seniority
+    user_text = full_user_text
 
     # Extract assessment type needs (only from EXPLICIT requests, not role words)
     for atype, indicators in TYPE_INDICATORS.items():
@@ -182,7 +188,8 @@ def extract_conversation_state(messages: list) -> dict:
             if atype not in state["assessment_types_mentioned"]:
                 state["assessment_types_mentioned"].append(atype)
 
-    # Extract specific skills mentioned
+    # Extract specific skills mentioned. Prefer the latest user message to avoid
+    # carrying over skills from a previous topic.
     skill_keywords = [
         "java", "python", "javascript", "c++", "c#", ".net", "sql", "react",
         "angular", "node.js", "aws", "azure", "docker", "kubernetes",
@@ -193,9 +200,23 @@ def extract_conversation_state(messages: list) -> dict:
         "html", "css", "php", "ruby", "swift", "kotlin", "spring",
         "django", "flask", "typescript", "golang", "rust",
     ]
-    for skill in skill_keywords:
-        if skill in user_text:
-            state["skills"].append(skill)
+    latest_skills = []
+    if user_messages_newest_first:
+        latest_text = user_messages_newest_first[0]
+        for skill in skill_keywords:
+            if skill in latest_text:
+                latest_skills.append(skill)
+
+    if latest_skills:
+        # Preserve order and remove duplicates
+        state["skills"] = list(dict.fromkeys(latest_skills))
+    else:
+        for skill in skill_keywords:
+            # Look only at the 2 most recent user messages to avoid carrying over old skills
+            for msg_text in user_messages_newest_first[:2]:
+                if skill in msg_text and skill not in state["skills"]:
+                    state["skills"].append(skill)
+                    break
 
     # Extract raw requirements (recent user messages)
     for msg in messages:
