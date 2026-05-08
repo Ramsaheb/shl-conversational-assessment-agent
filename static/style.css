@@ -196,6 +196,31 @@ body {
   margin-top: 8px;
 }
 
+/* Sample Questions */
+.sample-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sample-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--accent-hover);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sample-btn:hover {
+  background: var(--surface);
+  border-color: var(--accent);
+}
+
 /* Loading dots */
 .typing-indicator {
   display: flex;

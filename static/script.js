@@ -131,6 +131,13 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
+function sendSample(text) {
+  const sampleBtns = document.querySelectorAll(".sample-btn");
+  sampleBtns.forEach(btn => btn.style.display = "none");
+  userInput.value = text;
+  sendMessage();
+}
+
 // ---- API call ----
 
 async function sendMessage() {

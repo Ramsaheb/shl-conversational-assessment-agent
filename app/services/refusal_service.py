@@ -110,27 +110,10 @@ def detect_refusal(text: str) -> tuple[bool, str | None, str | None]:
             logger.warning("Prompt injection attempt detected: %s", text[:50])
             return True, "injection", REFUSAL_MESSAGES["injection"]
 
-    # Check if the message has SHL/assessment context
-    shl_context = any(
-        term in text_lower
-        for term in [
-            "assessment", "test", "evaluate", "hiring", "recruit",
-            "shl", "candidate", "developer", "engineer", "manager",
-            "analyst", "role", "position", "job", "skills",
-            "competency", "measure", "screen", "select",
-        ]
-    )
-
-    # Check refusal topics
+    # Check refusal topics — no bypasses for competitor/hiring_advice
     for topic, keywords in REFUSAL_TOPICS.items():
         for keyword in keywords:
             if keyword in text_lower:
-                # Allow if the message has clear SHL/hiring context, but only for certain topics
-                # (user is asking about assessments for a role that happens to mention these)
-                if shl_context and topic in ["competitor", "hiring_advice"]:
-                    # Don't refuse — user is likely asking about
-                    # assessments in a context that happens to mention this keyword
-                    continue
                 logger.info("Refusing %s topic: %s", topic, text[:50])
                 return True, topic, REFUSAL_MESSAGES[topic]
 

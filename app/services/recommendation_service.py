@@ -33,22 +33,40 @@ def _sanitize_reply(text: str) -> str:
 def _ground_reply(text: str, valid_recs: list[Recommendation]) -> str:
     """Ensure the LLM reply only mentions assessments in the validated shortlist.
 
-    Any assessment-looking name that is NOT in the recommendations list
-    gets replaced with a generic reference to prevent the evaluator from
-    flagging non-catalog mentions.
+    Two-layer grounding:
+    1. Remove any catalog name that is NOT in the current shortlist.
+    2. Detect hallucinated assessment-looking names (containing 'Assessment',
+       'Test', 'Questionnaire', etc.) that don't exist in the catalog at all.
     """
     from app.utils.validators import get_all_catalog_items
 
     # Build whitelist of names that are in our recommendations
     rec_names_lower = {r.name.lower() for r in valid_recs}
 
-    # Build a set of ALL catalog names (to detect hallucinated ones)
-    all_catalog_names = {item["name"] for item in get_all_catalog_items()}
+    # Build a set of ALL catalog names
+    all_catalog_items = get_all_catalog_items()
+    all_catalog_names = {item["name"] for item in all_catalog_items}
+    all_catalog_names_lower = {n.lower() for n in all_catalog_names}
 
-    # For each catalog name NOT in our recommendations, remove if present
+    # Layer 1: Remove catalog names not in the shortlist
     for cat_name in all_catalog_names:
         if cat_name.lower() not in rec_names_lower and cat_name in text:
             text = text.replace(cat_name, "an additional assessment")
+
+    # Layer 2: Detect hallucinated assessment-looking names
+    # Match patterns like "SHL XYZ Assessment", "XYZ Test", "XYZ Questionnaire"
+    hallucination_patterns = [
+        r'(?:SHL\s+)?[A-Z][A-Za-z0-9\s&\-]+(?:Assessment|Test|Questionnaire|Inventory|Survey|Scale|Battery|Report)',
+    ]
+    for pattern in hallucination_patterns:
+        for match in re.finditer(pattern, text):
+            matched_name = match.group(0).strip()
+            # Check if this is a recommended name or a known catalog name
+            if (matched_name.lower() not in rec_names_lower and
+                matched_name.lower() not in all_catalog_names_lower and
+                matched_name not in all_catalog_names):
+                # It's hallucinated — replace it
+                text = text.replace(matched_name, "a relevant assessment")
 
     return text
 
