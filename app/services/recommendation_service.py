@@ -112,7 +112,7 @@ async def get_recommendations(
         return [], "I couldn't find matching assessments for your criteria. Could you provide more details?"
 
     # Rank and select top-K
-    ranked = rank_results(items, top_k=top_k, preferred_types=preferred_types)
+    ranked = rank_results(items, top_k=top_k, preferred_types=preferred_types, query=search_query)
 
     # Build recommendations from ranked results
     recommendations = []

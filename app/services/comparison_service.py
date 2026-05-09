@@ -29,32 +29,49 @@ def find_assessments_to_compare(text: str) -> list[dict]:
     """
     text_lower = text.lower()
     items = get_all_catalog_items()
-    
+
+    # Well-known abbreviation → catalog name fragment mapping
+    COMMON_ALIASES = {
+        "opq": "occupational personality questionnaire",
+        "opq32": "occupational personality questionnaire",
+        "opq32r": "occupational personality questionnaire",
+        "verify g+": "verify g+",
+        "verify g": "verify g+",
+        "gsa": "verify g+",
+        "mq": "motivational questionnaire",
+        "sjt": "situational judgement",
+        "cebshl": "ceb",
+    }
+
     found = []
     seen = set()
 
+    # First pass: match common abbreviations from user text
+    for alias, fragment in COMMON_ALIASES.items():
+        if alias in text_lower:
+            # Find the first catalog item whose name contains the fragment
+            for item in items:
+                if fragment in item["name"].lower() and item["name"] not in seen:
+                    found.append(item)
+                    seen.add(item["name"])
+                    break  # One match per alias
+
+    # Second pass: match full or partial catalog names directly in user text
     for item in items:
+        if item["name"] in seen:
+            continue
         name_lower = item["name"].lower()
         aliases = [name_lower]
-        
+
         if name_lower.startswith("shl "):
             aliases.append(name_lower[4:])
-            
+
         import re
         match = re.search(r'\(([^)]+)\)', name_lower)
         if match:
             acronym = match.group(1).strip()
             aliases.append(acronym)
             aliases.append(re.sub(r'\([^)]+\)', '', name_lower).strip())
-
-        if "occupational personality questionnaire" in name_lower:
-            aliases.extend(["opq", "opq32"])
-        elif "verify g+" in name_lower:
-            aliases.extend(["gsa"])
-        elif "motivational" in name_lower:
-            aliases.extend(["mq"])
-        elif "situational judgment" in name_lower:
-            aliases.extend(["sjt"])
 
         for alias in aliases:
             if len(alias) >= 3 and alias in text_lower and item["name"] not in seen:

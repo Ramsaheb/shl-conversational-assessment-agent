@@ -11,6 +11,9 @@ REFUSAL_TOPICS = {
         "legal advice", "lawsuit", "sue", "attorney", "lawyer",
         "court", "litigation", "legal rights", "employment law",
         "wrongful termination", "discrimination lawsuit",
+        "is it legal", "legality", "compliance", "compliant",
+        "eeoc", "regulations", "regulatory", "lawful",
+        "ada complian", "gdpr", "data protection law",
     ],
     "salary": [
         "salary", "compensation", "pay range", "how much should i pay",
