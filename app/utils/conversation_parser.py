@@ -48,15 +48,27 @@ TYPE_INDICATORS = {
     "cognitive": ["cognitive", "reasoning", "aptitude", "ability test", "numerical reasoning",
                   "verbal reasoning", "logical reasoning", "deductive", "inductive",
                   "mental ability", "iq test", "problem solving test", "analytical test"],
-    "personality": ["personality", "personality test", "OPQ", "motivation questionnaire",
+    "personality": ["personality", "personality test", "opq", "motivation questionnaire",
                     "cultural fit test", "work style assessment", "temperament",
                     "behavioral assessment", "personality assessment"],
     "skills": ["coding test", "coding assessment", "coding simulation", "programming test",
                "technical test", "technical assessment", "skills test", "skills assessment",
                "business skills test", "typing test", "excel test"],
-    "behavioral": ["situational judgment", "SJT", "judgment test", "scenarios test",
+    "behavioral": ["situational judgment", "sjt", "judgment test", "scenarios test",
                     "simulation assessment", "behavioral simulation"],
 }
+
+
+def _is_negated_keyword(text: str, keyword: str) -> bool:
+    """Check if a keyword is mentioned in a negated/removal context."""
+    text_lower = text.lower()
+    keyword_re = re.escape(keyword)
+    # Look for removal/negation near the keyword
+    patterns = [
+        rf"\b(remove|exclude|without|avoid|drop|no|not)\b\s+(?:any\s+)?{keyword_re}\b",
+        rf"\b{keyword_re}\b\s+(?:tests?|assessments?)\s+(?:to\s+)?(remove|exclude|avoid|drop)",
+    ]
+    return any(re.search(p, text_lower) for p in patterns)
 
 
 def extract_conversation_state(messages: list) -> dict:
@@ -164,7 +176,7 @@ def extract_conversation_state(messages: list) -> dict:
         if state["seniority"]:
             break
         for level, keywords in SENIORITY_KEYWORDS.items():
-            if any(kw in msg_text for kw in keywords):
+            if any(kw in msg_text and not _is_negated_keyword(msg_text, kw) for kw in keywords):
                 state["seniority"] = level
                 break
         

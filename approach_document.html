@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Approach Document – SHL Assessment Recommender</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #1a1a2e;
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 30px 40px;
+  }
+  h1 { font-size: 16pt; color: #0f3460; margin-bottom: 4px; border-bottom: 2px solid #0f3460; padding-bottom: 4px; }
+  .subtitle { font-size: 9pt; color: #555; margin-bottom: 16px; }
+  h2 { font-size: 12pt; color: #0f3460; margin-top: 14px; margin-bottom: 4px; }
+  p, li { font-size: 10pt; margin-bottom: 4px; }
+  ul { margin-left: 18px; margin-bottom: 6px; }
+  li { margin-bottom: 2px; }
+  strong { color: #0f3460; }
+  code { background: #eef2f7; padding: 1px 4px; border-radius: 3px; font-size: 9pt; }
+  .arch-box {
+    background: #f0f4f8; border: 1px solid #d0d8e0; border-radius: 6px;
+    padding: 8px 12px; margin: 8px 0; font-family: 'Courier New', monospace;
+    font-size: 9pt; line-height: 1.6; white-space: pre;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 9pt; }
+  th { background: #0f3460; color: white; padding: 4px 8px; text-align: left; }
+  td { border: 1px solid #d0d8e0; padding: 3px 8px; }
+  tr:nth-child(even) { background: #f8f9fb; }
+  .footer { margin-top: 12px; font-size: 8pt; color: #888; text-align: center; border-top: 1px solid #ddd; padding-top: 4px; }
+  @media print {
+    body { padding: 20px 30px; }
+    @page { margin: 1.5cm; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Approach Document: SHL Conversational Assessment Recommender</h1>
+<div class="subtitle">Ramsaheb Prasad &nbsp;|&nbsp; AI Intern Take-Home Assessment &nbsp;|&nbsp; May 2026 &nbsp;|&nbsp; Stack: FastAPI, ChromaDB, Groq (Llama 3.1 8B), Sentence-Transformers</div>
+
+<h2>1. Architecture &amp; Design Choices</h2>
+<p>The system is a <strong>stateless FastAPI microservice</strong> with a deterministic orchestration layer — no LangChain, no LangGraph. The LLM generates only natural language; all routing, safety, and grounding decisions are made in Python.</p>
+
+<div class="arch-box">User Message → POST /chat
+  ↓ Conversation State Extractor (deterministic parsing)
+  ↓ Intent Detector (refusal → comparison → refinement → recommendation → clarification)
+  ↓ Hybrid Retriever (ChromaDB semantic + Jaccard keyword)
+  ↓ Ranker (semantic 60% + keyword 30% + metadata boost 10% + domain penalty)
+  ↓ LLM Summary (Groq: llama-3.1-8b-instant)
+  ↓ Post-Processor (URL sanitization + name grounding + catalog validation)
+  ↓ Pydantic Response {reply, recommendations[], end_of_conversation}</div>
+
+<ul>
+  <li><strong>Stateless:</strong> Full conversation history is sent with every request. State (role, seniority, skills, assessment type needs) is extracted per-request via deterministic keyword/regex parsing.</li>
+  <li><strong>Deterministic Intent Routing:</strong> Six intents (<code>refusal</code>, <code>comparison</code>, <code>refinement</code>, <code>recommendation</code>, <code>greeting</code>, <code>clarification</code>) detected via Python rules, not LLM classification. This prevents non-deterministic routing loops and ensures predictable behavior.</li>
+  <li><strong>Turn-Cap Enforcement:</strong> A hard limit forces best-effort recommendation when the conversation approaches 8 turns, preventing infinite clarification loops.</li>
+  <li><strong>Safety-First Refusals:</strong> A dedicated refusal service runs <em>before</em> any LLM call, using regex patterns for prompt injection and keyword matching for off-topic detection (legal, salary, competitors, general hiring advice).</li>
+</ul>
+
+<h2>2. Retrieval Strategy</h2>
+<ul>
+  <li><strong>Catalog:</strong> 377 Individual Test Solutions scraped from the SHL product catalog via a custom BeautifulSoup pagination scraper. Each item stores name, URL, test type code (A/B/C/K/P/S), description, skills, and tags.</li>
+  <li><strong>Embedding Model:</strong> <code>sentence-transformers/all-MiniLM-L6-v2</code> (runs locally, fast, good semantic quality for short text).</li>
+  <li><strong>Hybrid Search:</strong> Broad semantic retrieval (top 30 from ChromaDB) combined with Jaccard keyword overlap scoring — no hard metadata filtering.</li>
+  <li><strong>Smart Ranking:</strong> Combined score = 60% semantic + 30% keyword + 10% metadata type bonus. A <strong>domain-mismatch penalty</strong> demotes results whose names contain unrelated tech keywords (e.g., "Java Web Services" for a customer service query).</li>
+  <li><strong>No Hard Filtering:</strong> Early experiments with metadata-only filtering (e.g., only type "K" for developers) destroyed Recall@10 by excluding valid cognitive/personality assessments. Soft boosting preserves recall while improving precision.</li>
+</ul>
+
+<h2>3. Prompt Design &amp; Grounding</h2>
+<ul>
+  <li><strong>Post-Retrieval Generation:</strong> The LLM receives only validated catalog items and is asked to explain <em>why</em> they fit. It never generates names, URLs, or types from its own weights.</li>
+  <li><strong>URL Sanitization:</strong> A regex post-processor strips any URLs the LLM may inject into the reply text, ensuring URLs appear only in the structured <code>recommendations</code> array.</li>
+  <li><strong>Name Grounding:</strong> A whitelist checker replaces any assessment name in the reply that isn't in the current shortlist with generic text ("a relevant assessment"), preventing hallucinated references.</li>
+  <li><strong>Catalog Validation:</strong> Every recommendation is cross-referenced against the full catalog before returning. Non-matching items are silently dropped.</li>
+</ul>
+
+<h2>4. Evaluation Approach &amp; Iteration</h2>
+
+<table>
+  <tr><th>Evaluation Method</th><th>What It Measures</th><th>Result</th></tr>
+  <tr><td>Schema compliance checks</td><td>Correct fields, types, JSON validity</td><td>17/17 pass</td></tr>
+  <tr><td>Behavioral probe suite (17 tests)</td><td>Clarification, refusal, injection, refinement, comparison</td><td>17/17 pass</td></tr>
+  <tr><td>Recall@10 on public traces</td><td>Fraction of expected assessments in top-10 results</td><td>Measured via automated replay</td></tr>
+  <tr><td>Latency per turn</td><td>Response time under 30s constraint</td><td>&lt;5s average</td></tr>
+</table>
+
+<p><strong>What Didn't Work:</strong></p>
+<ul>
+  <li>Initial catalog had only ~22 hand-curated items → destroyed Recall@10. Fixed by scraping the full 377-item catalog.</li>
+  <li>Hard metadata filtering excluded valid cross-domain assessments → replaced with soft ranking boost.</li>
+  <li>Legal queries like "Is it legal to use personality tests?" bypassed refusal because only "legal advice" (exact phrase) was matched → expanded to include "is it legal", "compliance", "EEOC", "regulations".</li>
+  <li>Comparison for "OPQ vs Verify G+" failed because alias matching didn't map abbreviations → added a dedicated alias dictionary for common short-forms.</li>
+  <li>Keyword "service" in "customer service" matched "Java Web Services" → added domain-mismatch penalty in ranking.</li>
+</ul>
+
+<h2>5. AI Tools Used</h2>
+<p>I used <strong>Gemini (Antigravity)</strong> as an AI coding assistant for: scaffolding FastAPI endpoints and Pydantic models, writing the catalog scraper, debugging refusal edge cases, and automating deployment to Hugging Face Spaces and Render. All code was reviewed and understood before committing — the architecture, retrieval strategy, and grounding decisions reflect deliberate engineering choices, not vibe-coding.</p>
+
+<div class="footer">
+  Render: https://shl-assessment-agent-wjgk.onrender.com &nbsp;|&nbsp; HF Spaces: https://ramsaheb-shl.hf.space &nbsp;|&nbsp; GitHub: github.com/Ramsaheb/shl-conversational-assessment-agent
+</div>
+
+</body>
+</html>

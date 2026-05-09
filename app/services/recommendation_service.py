@@ -83,6 +83,8 @@ async def get_recommendations(
     search_query: str,
     state: dict,
     top_k: int = 7,
+    exclude_keywords: list[str] | None = None,
+    required_types: list[str] | None = None,
 ) -> tuple[list[Recommendation], str]:
     """Retrieve and format assessment recommendations.
 
@@ -111,8 +113,70 @@ async def get_recommendations(
     if not items:
         return [], "I couldn't find matching assessments for your criteria. Could you provide more details?"
 
-    # Rank and select top-K
-    ranked = rank_results(items, top_k=top_k, preferred_types=preferred_types, query=search_query)
+    # Apply exclusion filters for refinement (e.g., "remove entry-level")
+    if exclude_keywords:
+        exclude_set = {kw.lower() for kw in exclude_keywords if kw}
+
+        def _is_excluded(meta: dict) -> bool:
+            haystacks = [
+                meta.get("name", ""),
+                meta.get("description", ""),
+            ]
+            for field in ["keywords", "tags", "skills"]:
+                raw = meta.get(field, [])
+                if isinstance(raw, str):
+                    try:
+                        raw = json.loads(raw)
+                    except json.JSONDecodeError:
+                        raw = [raw]
+                if isinstance(raw, list):
+                    haystacks.extend([str(v) for v in raw])
+
+            haystack = " ".join(haystacks).lower()
+            return any(kw in haystack for kw in exclude_set)
+
+        items = [item for item in items if not _is_excluded(item.get("metadata", {}))]
+
+    # Determine required types when explicitly requested
+    if required_types is None:
+        required_types = []
+        if state.get("assessment_types_mentioned"):
+            if state.get("needs_cognitive"):
+                required_types.append("A")
+            if state.get("needs_personality"):
+                required_types.append("P")
+            if state.get("needs_technical"):
+                required_types.append("K")
+            if state.get("needs_behavioral"):
+                required_types.append("B")
+
+    # Rank and select top-K (rank all to enforce type coverage)
+    ranked_all = rank_results(items, top_k=len(items), preferred_types=preferred_types, query=search_query)
+    ranked = ranked_all[:top_k]
+
+    if required_types:
+        selected_names = {item.get("metadata", {}).get("name", "") for item in ranked}
+        present = set()
+        for item in ranked:
+            test_type = item.get("metadata", {}).get("test_type", "")
+            for code in test_type:
+                if code in required_types:
+                    present.add(code)
+
+        missing = [code for code in required_types if code not in present]
+        for code in missing:
+            for candidate in ranked_all:
+                name = candidate.get("metadata", {}).get("name", "")
+                test_type = candidate.get("metadata", {}).get("test_type", "")
+                if name in selected_names:
+                    continue
+                if code in test_type:
+                    if ranked:
+                        ranked[-1] = candidate
+                    else:
+                        ranked.append(candidate)
+                    selected_names.add(name)
+                    break
 
     # Build recommendations from ranked results
     recommendations = []

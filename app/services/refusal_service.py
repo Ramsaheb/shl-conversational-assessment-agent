@@ -30,7 +30,9 @@ REFUSAL_TOPICS = {
         "write a script for", "write me a script",
     ],
     "hiring_advice": [
-        "interview questions to ask", "hiring strategy", "onboarding process",
+        "interview questions to ask", "interview questions", "interview question",
+        "questions to ask", "interview guide", "interviewing candidates",
+        "screening questions", "hiring strategy", "onboarding process",
         "how to interview candidates", "resume tips", "cv review",
         "performance review template", "how to fire",
     ],

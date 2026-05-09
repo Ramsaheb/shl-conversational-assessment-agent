@@ -147,6 +147,74 @@ def detect_intent(messages: list[ChatMessage], state: dict) -> str:
     return INTENT_CLARIFICATION
 
 
+def _parse_refinement_directives(text: str) -> dict:
+    """Parse refinement instructions like add/remove assessment types."""
+    text_lower = text.lower()
+    directives = {
+        "add_types": set(),
+        "remove_types": set(),
+        "exclude_keywords": set(),
+    }
+
+    type_map = {
+        "personality": "P",
+        "cognitive": "A",
+        "ability": "A",
+        "technical": "K",
+        "skills": "K",
+        "coding": "K",
+        "behavioral": "B",
+        "behavior": "B",
+        "sjt": "B",
+    }
+
+    add_pattern = r"\b(add|include|also add|plus|along with)\b"
+    remove_pattern = r"\b(remove|exclude|without|avoid|drop|no)\b"
+
+    for label, code in type_map.items():
+        if re.search(rf"{add_pattern}\s+{re.escape(label)}", text_lower):
+            directives["add_types"].add(code)
+        if re.search(rf"{remove_pattern}\s+{re.escape(label)}", text_lower):
+            directives["remove_types"].add(code)
+
+    # Exclude entry-level/junior tests if asked
+    if re.search(r"\b(remove|exclude|without|avoid|drop|no)\b\s+(?:any\s+)?(entry[- ]level|junior|beginner|graduate|intern|trainee)", text_lower):
+        directives["exclude_keywords"].update({
+            "entry-level", "entry level", "junior", "beginner", "graduate", "intern", "trainee",
+        })
+
+    return directives
+
+
+def _apply_refinement_to_state(state: dict, directives: dict) -> dict:
+    """Update conversation state based on refinement directives."""
+    type_flag_map = {
+        "A": "needs_cognitive",
+        "P": "needs_personality",
+        "K": "needs_technical",
+        "B": "needs_behavioral",
+    }
+
+    for code in directives.get("add_types", set()):
+        flag = type_flag_map.get(code)
+        if flag:
+            state[flag] = True
+        if code not in state.get("assessment_types_mentioned", []):
+            state["assessment_types_mentioned"].append({
+                "A": "cognitive",
+                "P": "personality",
+                "K": "skills",
+                "B": "behavioral",
+            }.get(code, code))
+
+    for code in directives.get("remove_types", set()):
+        flag = type_flag_map.get(code)
+        if flag:
+            state[flag] = False
+
+    return state
+
+
 async def process_conversation(messages: list[ChatMessage]) -> ChatResponse:
     """Process a conversation and generate a response.
 
@@ -304,16 +372,16 @@ async def _handle_refinement(
     messages: list[ChatMessage], state: dict
 ) -> ChatResponse:
     """Handle refinement of previous recommendations."""
+    latest_msg = messages[-1].content
+    directives = _parse_refinement_directives(latest_msg)
+    state = _apply_refinement_to_state(state, directives)
     search_query = build_search_query(state)
-
-    # Add refinement context to query
-    latest_msg = messages[-1].content.lower()
-    search_query = f"{search_query} {latest_msg}"
 
     recommendations, summary = await get_recommendations(
         search_query=search_query,
         state=state,
         top_k=7,
+        exclude_keywords=sorted(directives.get("exclude_keywords", set())),
     )
 
     if not recommendations:

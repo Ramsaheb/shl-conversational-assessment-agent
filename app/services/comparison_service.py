@@ -1,6 +1,7 @@
 """Comparison service for comparing SHL assessments."""
 
 import json
+import re
 from pathlib import Path
 
 from app.services.groq_service import generate_response
@@ -37,7 +38,6 @@ def find_assessments_to_compare(text: str) -> list[dict]:
         "opq32r": "occupational personality questionnaire",
         "verify g+": "verify g+",
         "verify g": "verify g+",
-        "gsa": "verify g+",
         "mq": "motivational questionnaire",
         "sjt": "situational judgement",
         "cebshl": "ceb",
@@ -82,6 +82,29 @@ def find_assessments_to_compare(text: str) -> list[dict]:
     return found
 
 
+def _extract_requested_assessments(text: str) -> list[str]:
+    """Extract assessment-like tokens from a comparison request."""
+    text_clean = re.sub(r"[?.!]", "", text.lower()).strip()
+
+    match = re.search(r"compare\s+(.+?)\s+(?:and|vs|versus)\s+(.+)", text_clean)
+    if not match:
+        match = re.search(r"(.+?)\s+(?:vs|versus)\s+(.+)", text_clean)
+
+    if not match:
+        return []
+
+    left = match.group(1).strip()
+    right = match.group(2).strip()
+
+    def _trim_suffix(s: str) -> str:
+        # Remove trailing context like "for leadership roles"
+        parts = re.split(r"\bfor\b|\bwhich\b|\bshould\b|\bused\b", s)
+        return parts[0].strip()
+
+    candidates = [_trim_suffix(left), _trim_suffix(right)]
+    return [c for c in candidates if c]
+
+
 async def compare_assessments(text: str) -> str:
     """Generate a grounded comparison between mentioned assessments.
 
@@ -94,6 +117,17 @@ async def compare_assessments(text: str) -> str:
     items = find_assessments_to_compare(text)
 
     if len(items) < 2:
+        requested = _extract_requested_assessments(text)
+        if requested:
+            missing = [r for r in requested if not get_catalog_item_by_name(r)]
+            if missing:
+                missing_text = ", ".join(missing)
+                return (
+                    f"I couldn't find {missing_text} in the SHL catalog. "
+                    "Please provide the exact assessment names from the SHL catalog "
+                    "so I can compare them accurately."
+                )
+
         return (
             "I'd be happy to compare SHL assessments for you. "
             "Could you specify which two assessments you'd like to compare? "

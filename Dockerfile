@@ -31,5 +31,5 @@ RUN python -m scripts.ingest_catalog
 # Expose port for Hugging Face Spaces
 EXPOSE 7860
 
-# Start the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Start the application (Render uses $PORT; HF Spaces expects 7860)
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
