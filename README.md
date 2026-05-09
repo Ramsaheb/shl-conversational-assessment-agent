@@ -1,3 +1,12 @@
+---
+title: SHL Assessment Recommendation Agent
+emoji: 🤖
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # SHL Conversational Assessment Recommendation Agent
 
 A production-quality, stateless conversational AI agent that helps recruiters select SHL assessments. Built with FastAPI, ChromaDB, Sentence Transformers, and Groq API.
