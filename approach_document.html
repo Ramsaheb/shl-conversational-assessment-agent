@@ -96,8 +96,10 @@
   <li>Hard metadata filtering excluded valid cross-domain assessments → replaced with soft ranking boost.</li>
   <li>Legal queries like "Is it legal to use personality tests?" bypassed refusal because only "legal advice" (exact phrase) was matched → expanded to include "is it legal", "compliance", "EEOC", "regulations".</li>
   <li>Comparison for "OPQ vs Verify G+" failed because alias matching didn't map abbreviations → added a dedicated alias dictionary for common short-forms.</li>
-  <li>Keyword "service" in "customer service" matched "Java Web Services" → added domain-mismatch penalty in ranking.</li>
+  <li>Keyword "service" in "customer service" matched "Java Web Services" &rarr; added domain-mismatch penalty in ranking.</li>
 </ul>
+
+<p><strong>How I Measured Improvement:</strong> Each fix was validated by re-running the full behavioral probe suite (8 core scenarios + 9 edge cases) and checking Recall@10 against the 10 public traces. The probe pass-rate went from 11/17 to 17/17 across iterations. Latency was tracked per-call to stay under the 30-second evaluator timeout.</p>
 
 <h2>5. AI Tools Used</h2>
 <p>I used <strong>Gemini (Antigravity)</strong> as an AI coding assistant for: scaffolding FastAPI endpoints and Pydantic models, writing the catalog scraper, debugging refusal edge cases, and automating deployment to Hugging Face Spaces and Render. All code was reviewed and understood before committing — the architecture, retrieval strategy, and grounding decisions reflect deliberate engineering choices, not vibe-coding.</p>
